@@ -1,0 +1,69 @@
+#include <iostream>
+#include <fstream>
+#include <vector>
+#include <string>
+#include <iomanip>
+#include <algorithm>
+#include <sstream>
+
+using namespace std;
+
+// 科目结构体
+struct Subject {
+    string name;      // 科目名称
+    double score;     // 成绩
+};
+
+// 考生结构体
+struct Student {
+    string id;        // 准考证号
+    string name;      // 姓名
+    string gender;    // 性别
+    int age;          // 年龄
+    vector<Subject> subjects;  // 科目列表
+};
+
+vector<Student> students;  // 存储所有考生
+
+// 函数声明
+void showMenu();
+void inputStudents();
+void showAllStudents();
+void searchStudent();
+void addStudent();
+void modifyStudent();
+void deleteStudent();
+void saveToExcel();
+void loadFromExcel();
+int findStudentById(string id);
+void showSingleStudent(Student stu, int index);
+double calculateAverage(Student stu);
+
+int main() {
+    loadFromExcel();  // 启动时加载Excel数据
+    
+    int choice;
+    do {
+        showMenu();
+        cout << "请选择: ";
+        cin >> choice;
+        
+        switch(choice) {
+            case 1: inputStudents(); break;
+            case 2: showAllStudents(); break;
+            case 3: searchStudent(); break;
+            case 4: addStudent(); break;
+            case 5: modifyStudent(); break;
+            case 6: deleteStudent(); break;
+            case 0: 
+                saveToExcel();
+                cout << "\n数据已保存到 考生信息.xlsx (实际是CSV格式，Excel可直接打开)" << endl;
+                cout << "谢谢使用！" << endl;
+                break;
+            default:
+                cout << "输入错误，请重新选择！" << endl;
+        }
+    } while(choice != 0);
+    
+    return 0;
+}
