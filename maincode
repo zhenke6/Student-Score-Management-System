@@ -1,69 +1,202 @@
 #include <iostream>
-#include <fstream>
-#include <vector>
 #include <string>
+#include <vector>
 #include <iomanip>
-#include <algorithm>
-#include <sstream>
-
 using namespace std;
-
+                            //这两个结构体要记住了，不然影响你们看下面的代码
+							 
 // 科目结构体
 struct Subject {
-    string name;      // 科目名称
-    double score;     // 成绩
+    string name;
+    float score;
 };
 
 // 考生结构体
 struct Student {
-    string id;        // 准考证号
-    string name;      // 姓名
-    string gender;    // 性别
-    int age;          // 年龄
-    vector<Subject> subjects;  // 科目列表
+    string id;          // 准考证号
+    string name;        // 姓名
+    string gender;      // 性别
+    int age;            // 年龄
+    vector<Subject> subjects;  // 科目及成绩（3-5个）
 };
 
-vector<Student> students;  // 存储所有考生
+// 全局变量
+vector<Student> students;  // 这个项目存储学生信息的方式用动态数组  这个动态数组是最最最常用的 
+ 
 
-// 函数声明
+// 函数声明  这里直接给出函数声明 注意你们写的函数名要复制这个 
 void showMenu();
-void inputStudents();
-void showAllStudents();
-void searchStudent();
-void addStudent();
-void modifyStudent();
-void deleteStudent();
-void saveToExcel();
-void loadFromExcel();
-int findStudentById(string id);
-void showSingleStudent(Student stu, int index);
-double calculateAverage(Student stu);
+
+void inputStudent(); //荣利 
+void outputStudents();//jy
+void queryStudent();//hb
+void addStudent();  //荣利 
+void modifyStudent();//hb //要修改的量多 工作量可能有点大 
+void deleteStudent();//jy
+bool isIdExist(string id, int excludeIndex = -1); //荣利 
+void printStudent(const Student& s);//jy
+
+vector<Subject> inputSubjects();  // 返回科目信息的函数 //荣利 
 
 int main() {
-    loadFromExcel();  // 启动时加载Excel数据
-    
     int choice;
+    
     do {
         showMenu();
-        cout << "请选择: ";
+        cout << "请选择操作(0-6): ";
         cin >> choice;
         
         switch(choice) {
-            case 1: inputStudents(); break;
-            case 2: showAllStudents(); break;
-            case 3: searchStudent(); break;
-            case 4: addStudent(); break;
-            case 5: modifyStudent(); break;
-            case 6: deleteStudent(); break;
-            case 0: 
-                saveToExcel();
-                cout << "\n数据已保存到 考生信息.xlsx (实际是CSV格式，Excel可直接打开)" << endl;
-                cout << "谢谢使用！" << endl;
+            case 1:
+                inputStudent();
+                break;
+            case 2:
+                outputStudents();
+                break;
+            case 3:
+                queryStudent();
+                break;
+            case 4:
+                addStudent();
+                break;
+            case 5:
+                modifyStudent();
+                break;
+            case 6:
+                deleteStudent();
+                break;
+            case 0:
+                cout << "感谢使用，再见！" << endl;
                 break;
             default:
-                cout << "输入错误，请重新选择！" << endl;
+                cout << "输入有误，请重新选择！" << endl;
         }
+        
+        if(choice != 0) {
+            cout << "\n按回车键继续...";
+            cin.ignore();
+            cin.get();
+        }
+        
     } while(choice != 0);
     
     return 0;
 }
+
+// 显示菜单
+void showMenu() {
+    system("cls");  // 清屏 有这个的话就会清掉所有历史信息，无法回看之前的输出 你们可以注释掉对比一下前后效果 
+    cout << "==================== 考生信息管理系统 ====================" << endl;
+    cout << "  1. 输入考生信息" << endl;
+    cout << "  2. 输出所有考生信息" << endl;
+    cout << "  3. 查询考生信息" << endl;
+    cout << "  4. 添加考生信息" << endl;
+    cout << "  5. 修改考生信息" << endl;
+    cout << "  6. 删除考生信息" << endl;
+    cout << "  0. 退出系统" << endl;
+    cout << "========================================================" << endl;
+}
+
+// 输入科目信息
+vector<Subject> inputSubjects() {
+    vector<Subject> subjects;  //创建一个学生的科目数组 
+    int subjectCount;
+    
+    cout << "请输入科目数量(3-5): ";
+    cin >> subjectCount;
+    
+    while(subjectCount < 3 || subjectCount > 5) {
+        cout << "科目数量必须在3-5之间，请重新输入: ";
+        cin >> subjectCount;
+    }
+    
+    for(int i = 0; i < subjectCount; i++) {
+        Subject sub;   //实例化结构体科目对象 
+        cout << "请输入第" << i+1 << "个科目名称: ";
+        cin >> sub.name;
+        cout << "请输入" << sub.name << "的成绩: ";
+        cin >> sub.score;
+        
+        // 成绩验证
+        while(sub.score < 0 || sub.score > 100) {
+            cout << "成绩必须在0-100之间，请重新输入: ";
+            cin >> sub.score;
+        }
+        
+        subjects.push_back(sub); //将科目放进数组 
+    }
+    
+    return subjects;  // 返回科目列表
+}
+
+// 打印单个考生信息
+void printStudent(const Student& s) {
+    cout << "准考证号: " << s.id << endl;
+    cout << "姓    名: " << s.name << endl;
+    cout << "性    别: " << s.gender << endl;
+    cout << "年    龄: " << s.age << endl;
+    cout << "科    目: " << endl;
+    
+    for(size_t i = 0; i < s.subjects.size(); i++) {
+        cout << "  " << s.subjects[i].name << ": " << s.subjects[i].score << "分" << endl;
+    }
+    cout << "----------------------------------------" << endl;
+}
+
+// 检查准考证号是否已存在
+bool isIdExist(string id, int excludeIndex) {
+    for(size_t i = 0; i < students.size(); i++) {
+        if(i != excludeIndex && students[i].id == id) {
+            return true;
+        }
+    }
+    return false;
+}
+
+// 1. 输入考生信息
+void inputStudent() {
+    Student s; //创建考生实例 
+    
+    cout << "========== 输入考生信息 ==========" << endl;
+    
+    // 输入准考证号并验证唯一性
+    cout << "请输入准考证号: ";
+    cin >> s.id;
+    while(isIdExist(s.id)) {
+        cout << "准考证号已存在，请重新输入: ";
+        cin >> s.id;
+    }
+    
+    cout << "请输入姓名: ";
+    cin >> s.name;
+    
+    cout << "请输入性别(男/女): ";
+    cin >> s.gender;
+    
+    cout << "请输入年龄: ";
+    cin >> s.age;
+    while(s.age < 0 || s.age > 120) {
+        cout << "年龄无效，请重新输入(0-120): ";
+        cin >> s.age;
+    }
+    
+    // 直接接收返回的科目信息
+    s.subjects = inputSubjects(); //return给学生自己的属性 
+    
+    students.push_back(s);  //再将一个学生放进学生数组 
+    cout << "考生信息输入成功！" << endl;
+}
+
+// 2. 输出所有考生信息
+
+
+// 3. 查询考生信息void queryStudent() {
+
+// 4. 添加考生信息
+void addStudent() {
+    inputStudent();  // 复用输入功能
+}
+
+// 5. 修改考生信息
+
+// 6. 删除考生信息
